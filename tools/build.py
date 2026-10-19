@@ -5,7 +5,7 @@ import csv,html,json,os,re,shutil,datetime
 ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE=os.environ.get("WTF_SITE","https://wastetrackingfinder.co.uk")  # placeholder until domain bought; github.io URL can be passed via env
 PREVIEW=os.environ.get("WTF_PREVIEW","1")=="1"   # preview: noindex on every page; set WTF_PREVIEW=0 at go-live
-EMAIL=os.environ.get("WTF_EMAIL","")             # contact address NOT decided yet; blank renders "to be confirmed"
+EMAIL=os.environ.get("WTF_EMAIL","hello@wastetrackingfinder.co.uk")  # Google Workspace alias domain (Matthew, 19 Oct 2026)
 UPDATED="2026-10-19"
 ENTITY="Matthew Snow trading as Sno Automations"
 ADDRESS="The Bristol Office, 2nd Floor, 5 High Street, Westbury-on-Trym, Bristol BS9 3BY"
