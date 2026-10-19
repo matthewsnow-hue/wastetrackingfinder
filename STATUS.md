@@ -15,13 +15,22 @@ Updated Mon 19 Oct 2026 ~23:30 BST by Tel's executor. Local only: git init, no r
 - PAT 23 from GOV.UK.
 
 ## Pages: 242 in sitemap + 404.html
-home, /software/ A–Z, 8 type pages + other, 219 vendor pages, 4 deadline guides (Oct 2027 labelled "Planned, not yet law"), penalties, about-methodology, sponsor, newsletter, disclaimer, contact, privacy, terms.
+home, /software/ A–Z, 8 type pages + other, 219 vendor pages, 4 deadline guides (Oct 2027 worded exactly "is a plan, not a legal duty yet" in title, meta, badge, warning, timeline), penalties, about-methodology, sponsor, newsletter, disclaimer, contact, privacy, terms.
 Regulatory quotes are verbatim from GOV.UK content API copies in research/dwt/*.json (read 19 Oct).
 
 ## Last check: 242 pages × 2 widths, 0 errors, 0 bad, JSON-LD valid. Skip hire filter 13; +price 2.
 
 ## Open (blockers before go-live)
-- Contact email for the new site (not invented). Sponsor price/Stripe link, Kit newsletter form: placeholders marked [to be confirmed].
+- Contact email for the new site (not invented). Stripe payment link, Kit newsletter form: placeholders marked [to be confirmed]. Sponsor price now shown (sponsor + terms): £29/mo first 5 listings, then £49.
 - Privacy: add newsletter + stats sections when connected.
 - Type pages differ from plan v1.1 slugs (no /transfer-stations-recycling/ or /hazardous-waste/: no data for them).
 - Repo creation / github.io URL / domain: needs Matthew via Snowman.
+
+## Snowman QA fixes (preview 68615d5) — applied Mon 19 Oct 2026 ~22:45 BST
+1. Oct 2027 wording -> "is a plan, not a legal duty yet" everywhere (0 "not yet law" left).
+2. Sponsor test: test sponsor (WasteMatrix) in data/sponsors.json -> "Sponsored" badge, rel="sponsored noopener", list order identical to no-sponsor build (home 219, type page 94, diffed). Shots: shots/sponsor-test-390.png, shots/sponsor-test-1366.png. Test sponsor removed and rebuilt (no sponsors.json).
+3. LoadSnap free/£25 tier: NOT added. Dataset/README only give "£39/mo Pro; £169 Business". The £25 figure exists only as an unverified search summary in niche-log.md. Needs Sam to verify and add to dataset.
+4. Favicon: assets/favicon.svg + favicon-32.png + apple-touch-icon.png (replaces data:,).
+5. Sponsor offer on /sponsor/ and /terms/.
+Sam: 31 prices all show "price checked 19 Oct 2026"; no transfer-stations/hazardous pages.
+Check: 242 pages x 390/1366, 0 bad, 0 errors, JSON-LD valid; skip 13, +price 2.
