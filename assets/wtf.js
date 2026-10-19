@@ -1,0 +1,6 @@
+(function(){var b=document.querySelector('.menu-btn'),u=document.getElementById('navlist');if(b)b.addEventListener('click',function(){var o=u.classList.toggle('open');b.setAttribute('aria-expanded',o)});
+var t=document.querySelector('.filter-toggle'),f=document.getElementById('filters');if(t&&f)t.addEventListener('click',function(){var o=f.classList.toggle('open');t.setAttribute('aria-expanded',o)});
+var l=document.getElementById('list');if(!l)return;var cards=[].slice.call(l.children),q=document.getElementById('q'),c=document.getElementById('count'),n=document.getElementById('none');
+function run(){var s=(q.value||'').toLowerCase().trim(),ty=[].slice.call(document.querySelectorAll('input[name=type]:checked')).map(function(x){return x.value}),pat=document.querySelector('input[name=pat]:checked'),pr=document.querySelector('input[name=price]:checked'),k=0;
+cards.forEach(function(e){var ok=(!s||e.dataset.q.indexOf(s)>-1)&&(!ty.length||ty.indexOf(e.dataset.type)>-1)&&(!pat||e.dataset.pat=='1')&&(!pr||e.dataset.price=='1');e.hidden=!ok;if(ok)k++});c.textContent=k;n.hidden=k>0}
+q.addEventListener('input',run);document.addEventListener('change',function(e){if(e.target.matches('.side input'))run()});})();
