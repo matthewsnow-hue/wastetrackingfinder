@@ -4,7 +4,7 @@ Re-runnable: drop a new data/dataset.csv (Sam's format, see data/README) and reb
 import csv,html,json,os,re,shutil,datetime
 ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE=os.environ.get("WTF_SITE","https://wastetrackingfinder.co.uk")  # placeholder until domain bought; github.io URL can be passed via env
-PREVIEW=os.environ.get("WTF_PREVIEW","1")=="1"   # preview: noindex on every page; set WTF_PREVIEW=0 at go-live
+PREVIEW=os.environ.get("WTF_PREVIEW","0")=="1"   # live since 20 Oct 2026; WTF_PREVIEW=1 for a noindex preview build
 EMAIL=os.environ.get("WTF_EMAIL","hello@wastetrackingfinder.co.uk")  # Google Workspace alias domain (Matthew, 19 Oct 2026)
 UPDATED="2026-10-19"
 ENTITY="Matthew Snow trading as Sno Automations"
