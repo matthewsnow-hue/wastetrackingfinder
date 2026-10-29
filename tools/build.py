@@ -69,10 +69,13 @@ def card(p,pre):
     price=f"<p class='price'>{E(p['price'])} <span class='small'>· price checked {p['pricedate']}</span></p>" if p["price"] else "<p class='small'>No public price checked yet.</p>"
     site=f"<a href='{p['url']}' rel='nofollow noopener'>Vendor website</a>" if p["url"] else f"<a href='{LIST}'>See GOV.UK's list</a>"
     return f"<article class='card prod' data-type='{p['tslug']}' data-pat='{int(p['pat'])}' data-price='{int(bool(p['price']))}' data-q='{E((p['name']+' '+p['prov']).lower())}'><h3><a href='{pre}software/{p['slug']}/'>{E(p['name'])}</a></h3><p class='small'>by {E(p['prov'])}</p><p>{''.join(tags)}</p>{price}<p class='small'>{site}</p></article>"
+for _s in SP:
+    if _s.get("url") and not str(_s["url"]).startswith("https://"):
+        raise SystemExit(f"data/sponsors.json: sponsor {_s.get('slug')!r} url must start with https:// (got {_s['url']!r})")
 def sponsor_box(pre,tslug=None):
-    live=[s for s in SP if s.get("until","")>=UPDATED and (tslug is None or s.get("type") in (None,tslug))]
     bs={p["slug"]:p for p in P}
-    items="".join(f"<div class='card featured'><span class='badge'>Sponsored</span><h3>{E(bs[s['slug']]['name'])}</h3><p>{E(s.get('blurb',''))}</p><p><a href='{bs[s['slug']]['url'] or LIST}' rel='sponsored noopener'>Visit</a></p></div>" for s in live if s["slug"] in bs)
+    live=sorted([s for s in SP if s.get("until","9999-12-31")>=UPDATED and (tslug is None or s.get("type") in (None,tslug)) and s["slug"] in bs],key=lambda s:bs[s["slug"]]["name"].lower())
+    items="".join(f"<div class='card featured'><span class='badge'>Sponsored</span><h3>{E(bs[s['slug']]['name'])}</h3><p>{E(s.get('blurb',''))}</p><p><a href='{E(s.get('url') or bs[s['slug']]['url'] or LIST)}' rel='sponsored noopener'>Visit</a></p></div>" for s in live)
     return f"<aside class='sponsored' aria-label='Sponsored listings'><p class='small'>Sponsored listings are paid for, always labelled, and shown here only. They never change the order of the list below.</p>{items}</aside>" if items else ""
 TYPED=sum(p["typed"] for p in P);PRICED=sum(bool(p["price"]) for p in P);URLS=sum(bool(p["url"]) for p in P);PATN=sum(p["pat"] for p in P)
 def finder(pre,subset,filters=True):
