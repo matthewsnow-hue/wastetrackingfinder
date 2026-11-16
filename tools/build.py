@@ -6,7 +6,7 @@ ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE=os.environ.get("WTF_SITE","https://wastetrackingfinder.co.uk")  # placeholder until domain bought; github.io URL can be passed via env
 PREVIEW=os.environ.get("WTF_PREVIEW","0")=="1"   # live since 20 Oct 2026; WTF_PREVIEW=1 for a noindex preview build
 EMAIL=os.environ.get("WTF_EMAIL","hello@wastetrackingfinder.co.uk")  # Google Workspace alias domain (Matthew, 19 Oct 2026)
-UPDATED="2026-10-26"   # data/guide quotes last checked against GOV.UK; drives dateModified, sitemap lastmod, guide "last checked"
+UPDATED="2026-11-16"   # data/guide quotes last checked against GOV.UK; drives dateModified, sitemap lastmod, guide "last checked"
 LEGAL_UPDATED="2026-10-29"   # terms: change only when their text changes
 PRIVACY_UPDATED="2026-11-08"  # privacy text corrected independently of terms
 ENTITY="Matthew Snow trading as Sno Automations"
