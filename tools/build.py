@@ -23,6 +23,30 @@ m=re.search(r"list updated (\d{4}-\d\d-\d\d)",rows[0]["source_date"]);LIST_DATE=
 def dtxt(d):return f"{d.day} {d.strftime('%b %Y')}"
 TYPES=[("waste management (general)","waste-management-general","Waste management (general)"),("skip hire","skip-hire","Skip hire"),("scrap metal / vehicle dismantling","scrapyards-metal","Scrap metal and vehicle dismantling"),("weighbridge / weighing","weighbridges","Weighbridges and weighing"),("agri / compost / AD","agri-compost-ad","Agriculture, compost and AD"),("ERP / business suite","erp-business-suites","ERP and business suites"),("haulage / transport management","haulage-transport","Haulage and transport management"),("field service / job management","field-service","Field service and job management")]
 TMAP={k:(s,l) for k,s,l in TYPES};OTHER=("other-not-yet-categorised","Other / not yet categorised")
+TYPE_SHORT={"Waste management (general)":"waste management","Skip hire":"skip hire","Scrap metal and vehicle dismantling":"scrap metal","Weighbridges and weighing":"weighbridge","Agriculture, compost and AD":"agri / compost / AD","ERP and business suites":"ERP","Haulage and transport management":"haulage / transport","Field service and job management":"field service","Other / not yet categorised":"not yet categorised"}
+def short_name(p):
+    s=re.sub(r"\s*\(exempt for certain PAT scenarios\)\s*","",p["name"],flags=re.I).strip()
+    return s or p["name"]
+def product_title(p):
+    name=short_name(p)
+    for c in (f"{name}: digital waste tracking software – listing, price, website",f"{name}: digital waste tracking software",f"{name}: listing, price, website",f"{name}: software listing",name):
+        if len(c)<=60: return c
+    return name
+def product_desc(p):
+    name=short_name(p)
+    by="" if name.casefold()==p["prov"].casefold() else f" by {p['prov']}"
+    lead=f"{name}{by} is on GOV.UK's Report receipt of waste list."
+    typ=f"Type: {TYPE_SHORT.get(p['tlabel'], p['tlabel'].lower())}."
+    if p["pat"]: typ=typ.rstrip(".")+"; PAT exemption (per GOV.UK)."
+    if p["price"]:
+        pr=p["price"]; price=f"Price: {pr}." if len(pr)<=40 else "Public price listed."
+    else:
+        price="No public price yet."
+    web="Website listed." if p["url"] else "Website not found yet."
+    for c in (f"{lead} {typ} {price} {web}",f"{lead} {price} {web}",f"{lead} Listing with site type, price and website.",lead):
+        if len(c)<=155: return c
+    return lead
+
 def slugify(s):return re.sub(r"-+","-",re.sub(r"[^a-z0-9]+","-",s.lower().replace("&","and"))).strip("-")
 used=set();P=[]
 for r in rows:
@@ -107,8 +131,8 @@ for p in P:
     rows_=[("Product (as on GOV.UK)",E(p["name"])),("Provider (as on GOV.UK)",E(p["prov"])),("On GOV.UK's list",f"Yes, list updated {dtxt(LIST_DATE)}: <a href='{LIST}'>see GOV.UK</a>"),("PAT exemption","GOV.UK marks it “exempt for certain PAT scenarios”. Ask the provider which scenarios." if p["pat"] else "None shown on GOV.UK's list"),("Site type (our reading)",f"<a href='{pre}{p['tslug']}/'>{E(p['tlabel'])}</a>"),("Public price",f"{E(p['price'])} (price checked {p['pricedate']}, as shown on the vendor's site, VAT as stated)" if p["price"] else "Not checked yet. Ask the provider."),("Website",f"<a href='{p['url']}' rel='nofollow noopener'>{E(p['url'])}</a> (hand-checked; may be the provider's company site)" if p["url"] else f"Not found yet. Find the provider on <a href='{LIST}'>GOV.UK's list</a>.")]
     tbl="".join(f"<tr><th scope='row'>{a}</th><td>{b}</td></tr>" for a,b in rows_)
     ld={"@context":"https://schema.org","@type":"SoftwareApplication","name":p["name"],"applicationCategory":"BusinessApplication","publisher":{"@type":"Organization","name":p["prov"]},**({"url":p["url"]} if p["url"] else {})}
-    page(f"software/{p['slug']}/",f"{p['name']} by {p['prov']}: digital waste tracking software | Waste Tracking Finder",f"{p['name']} by {p['prov']} is on GOV.UK's list of software providers for the Report receipt of waste service. Site type, PAT exemption and price.",
-     f"<section class='wrap narrow'><p class='small'><a href='{pre}software/'>All software</a> › {E(p['name'])}</p><span class='eyebrow'>On GOV.UK's list of software providers</span><h1>{E(p['name'])}</h1><p class='lede'>by {E(p['prov'])}</p><table class='facts'>{tbl}</table><p class='small'>Being on GOV.UK's list means the provider is listed for the Report receipt of waste service. It is not an endorsement by Defra or by us. Check fit, price and support with the provider before you buy.</p><p><a class='btn ghost' href='{pre}{p['tslug']}/'>More {E(p['tlabel'].lower())} software</a></p></section>",ld=ld)
+    page(f"software/{p['slug']}/",product_title(p),product_desc(p),
+     f"<section class='wrap narrow'><p class='small'><a href='{pre}software/'>All software</a> › {E(p['name'])}</p><span class='eyebrow'>Digital waste tracking software · on GOV.UK's list</span><h1>{E(p['name'])}</h1><p class='lede'>by {E(p['prov'])}</p><table class='facts'>{tbl}</table><p class='small'>Being on GOV.UK's list means the provider is listed for the Report receipt of waste service. It is not an endorsement by Defra or by us. Check fit, price and support with the provider before you buy.</p><p><a class='btn ghost' href='{pre}{p['tslug']}/'>More {E(p['tlabel'].lower())} software</a></p></section>",ld=ld)
 def guide(path,title,desc,eyebrow,h1,body,label=""):
     page(path,title,desc,f"<section class='wrap narrow'><span class='eyebrow'>{eyebrow}</span>{label}<h1>{h1}</h1><p class='small'>Last checked against GOV.UK {dtxt(datetime.date.fromisoformat(UPDATED))}. Not legal advice; check your duties with your regulator.</p>{body}<p><a class='btn' href='{'../'*path.count('/')}'>Find software</a></p></section>",kind="Article")
 guide("what-is-digital-waste-tracking/","What is digital waste tracking? Dates and who it applies to | Waste Tracking Finder","Plain-English guide to UK digital waste tracking: who must report the waste they receive, when, and how, quoted from GOV.UK.","Guide","What is <em>digital waste tracking</em>?",
