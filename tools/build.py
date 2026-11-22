@@ -66,7 +66,16 @@ pages=[]
 NAV=[("software/","All software"),("what-is-digital-waste-tracking/","Guides"),("penalties/","Penalties"),("about-methodology/","Methodology"),("sponsor/","List your software")]
 def q(text,src,label):return f"<blockquote>“{E(text)}”<cite class='small'>Source: <a href='{src}'>{E(label)}</a> (GOV.UK)</cite></blockquote>"
 def contact():return f"<a href='mailto:{EMAIL}'>{EMAIL}</a>" if EMAIL else "<span class='tbc'>[contact email to be confirmed]</span>"
+META={"":("Waste Tracking Finder: digital waste tracking software",None),
+ "what-is-digital-waste-tracking/":("What is digital waste tracking? Dates and who it applies to",None),
+ "report-receipt-of-waste/":("Report receipt of waste: API or spreadsheet, £26 charge",None),
+ "scotland-ni-1-january-2027/":("Digital waste tracking in Scotland and NI: 1 Jan 2027",None),
+ "carriers-brokers-dealers-2027/":("Waste tracking for carriers and brokers: Oct 2027 plan",None),
+ "penalties/":("Waste tracking penalties: £1,000 fixed, unlimited variable",None)}
 def page(path,title,desc,body,ld=None,kind="WebPage",sitemap=True,notfound=False,noindex=False):
+    if path in META:
+        title=META[path][0] or title;desc=META[path][1] or desc
+    elif len(title)>60 and title.endswith(" | Waste Tracking Finder"):title=title[:-len(" | Waste Tracking Finder")]
     depth=path.count("/");pre="/" if notfound else "../"*depth
     url=f"{SITE}/{path}"
     g=[{"@type":"Organization","@id":SITE+"/#org","name":"Sno Automations","alternateName":"Waste Tracking Finder","url":SITE+"/","founder":{"@type":"Person","name":"Matthew Snow"},"address":{"@type":"PostalAddress","streetAddress":"The Bristol Office, 2nd Floor, 5 High Street, Westbury-on-Trym","addressLocality":"Bristol","postalCode":"BS9 3BY","addressCountry":"GB"},"description":f"Waste Tracking Finder is run by {ENTITY}, a UK sole trader."},{"@type":"WebSite","@id":SITE+"/#site","name":"Waste Tracking Finder","url":SITE+"/","inLanguage":"en-GB","publisher":{"@id":SITE+"/#org"}}]
@@ -80,7 +89,7 @@ def page(path,title,desc,body,ld=None,kind="WebPage",sitemap=True,notfound=False
 <header class="site"><div class="wrap nav"><a class="brand" href="{pre or './'}">Waste Tracking <em>Finder</em></a><button class="menu-btn" aria-expanded="false" aria-controls="navlist" aria-label="Menu">Menu</button><ul id="navlist">{nav}</ul></div></header>
 <main id="main">{body}</main>
 <footer><div class="wrap"><div class="cols"><div><a class="brand" href="{pre or './'}">Waste Tracking <em>Finder</em></a><p>An independent guide to the software on GOV.UK's list of software providers for the Report receipt of waste service. Not run by, affiliated with or endorsed by Defra, the Environment Agency or any UK government body. Not legal advice.</p><p>Run by {ENTITY}. Business address: {ADDRESS}. ICO registration {ICO}. Contact: {contact()}</p><p class="small">Contains public sector information licensed under the <a href="{OGL}">Open Government Licence v3.0</a>. Product and provider names from GOV.UK's <a href="{LIST}">Report receipt of waste: choose a software provider</a>, list updated {dtxt(LIST_DATE)}.</p></div>
-<div><p><a href="{pre}software/">All software</a><br><a href="{pre}what-is-digital-waste-tracking/">What is digital waste tracking?</a><br><a href="{pre}report-receipt-of-waste/">Report receipt of waste</a><br><a href="{pre}scotland-ni-1-january-2027/">Scotland and NI: 1 Jan 2027</a><br><a href="{pre}carriers-brokers-dealers-2027/">Carriers, brokers, dealers</a><br><a href="{pre}penalties/">Penalties</a></p></div>
+<div><p><a href="{pre}software/">All software</a><br><a href="{pre}compare/">Compare software</a><br><a href="{pre}what-is-digital-waste-tracking/">What is digital waste tracking?</a><br><a href="{pre}report-receipt-of-waste/">Report receipt of waste</a><br><a href="{pre}scotland-ni-1-january-2027/">Scotland and NI: 1 Jan 2027</a><br><a href="{pre}carriers-brokers-dealers-2027/">Carriers, brokers, dealers</a><br><a href="{pre}penalties/">Penalties</a></p></div>
 <div><p><a href="{pre}about-methodology/">Methodology</a><br><a href="{pre}sponsor/">List your software</a><br><a href="{pre}newsletter/">Newsletter</a><br><a href="{pre}disclaimer/">Disclaimer</a><br><a href="{pre}privacy/">Privacy</a><br><a href="{pre}terms/">Terms</a><br><a href="{pre}contact/">Contact</a></p></div></div></div></footer>
 <script src="{pre}assets/wtf.js" defer></script><script data-goatcounter="https://wastetrackingfinder.goatcounter.com/count" async src="/assets/count.js"></script></body></html>"""
     doc=re.sub(r"<a href='(https?://[^']+)'>",lambda m:f"<a href='{m.group(1)}' target='_blank' rel='noopener'>",doc)
@@ -124,15 +133,72 @@ for k,s,l in TYPES+[(None,)+OTHER]:
     sub=[p for p in P if p["tslug"]==s]
     if not sub:continue
     note="These products haven't been given a site type yet. They're checked by hand, so the group shrinks over time." if k is None else "Site type is our own reading of each product's name or website, not a GOV.UK category. It may be refined."
-    page(f"{s}/",f"{l} software for digital waste tracking | Waste Tracking Finder",f"{len(sub)} products on GOV.UK's Report receipt of waste software list that we class as {l.lower()}.",
+    ll=TYPE_SHORT[l] if l in TYPE_SHORT else l.lower()
+    ctitle=next(c for c in (f"{l} software for digital waste tracking",f"{l} digital waste tracking software",f"{l} waste tracking software",f"{l} software list") if len(c)<=60)
+    cdesc=next(c for c in (f"{len(sub)} {ll} products on GOV.UK's Report receipt of waste software list, A–Z, with price and website where we have checked them.",f"{len(sub)} {ll} products on GOV.UK's Report receipt of waste list, A–Z, with price and website where checked.") if len(c)<=155)
+    page(f"{s}/",ctitle,cdesc,
      hero("Site type",E(l),f"{len(sub)} of the {N} products on GOV.UK's list. {note}")+f"<section class='wrap'>{sponsor_box('../',s)}{finder('../',sub,False)}</section>",ld=itemlist(sub,l),kind="CollectionPage")
+# ---- Comparison pages (X vs Y). Facts: data/dataset.csv fields + short, attributed notes from each vendor's own public page (read 22 Nov 2026). No ranking, no sponsorship influence.
+CMP_READ="22 Nov 2026"
+VN={ # slug -> (clean source url, [notes: what the vendor's own page says])
+ "wastrio":("https://wastrio.co.uk",["Its page title calls it “Digital Waste Tracking Software for Permitted Waste Receiving Sites”.","Its page description says it is “compatible with Digital Waste Tracking, Report Receipt of Waste”. The rest of the page loads by script and was not readable in our check."]),
+ "checkwright":("https://checkwright.co.uk",["Says it is built for UK waste carriers, skip hire operators and receiving sites.","Says it has live production access for Phase 1 submissions, and advertises a 14-day free trial, no contracts and no setup fees."]),
+ "weighsoft":("https://www.theaccessgroup.com/en-gb/our-brands/isys/",["The Access Group's Isys page says Weighsoft and Roundsman are the Isys products, now under The Access Group.","Its weighbridge software page text says it helps you manage incoming and outgoing loads and process weights in a few clicks."]),
+ "openweigh":("https://openweigh.com",["Describes itself as weighbridge ticketing software, and advertises a 7-day free trial.","Lists customer, product and vehicle databases, and EWC code and waste carrier licence storage."]),
+ "cyrus-tms":("https://www.eurora-group.com/what-we-do/transport-management-software",["Eurora Group describes Cyrus TMS as a cloud transport management system for transport operators, sold as software as a service with monthly costs.","Its page lists job input, planning tools, automated pricing and job execution. We did not find a Cyrus page about digital waste tracking in this check."]),
+ "wastetrak-360":("https://wastetrak360.co.uk",["Says it is for waste and recycling operators: route planning, digital waste transfer notes, invoicing and a free customer panel.","Lists “DWT integration” to connect an operation to digital waste tracking."]),
+ "metal-track":("https://www.metaltrack.co.uk/",["Describes itself as scrap metal management software for dealers, and says it is “Defra approved”. That is the vendor's claim; we have not verified it.","Lists “Automated Submissions to DEFRA and SEPA” under digital waste tracking."]),
+ "scrap-tracker":("https://www.scraptracker.co.uk/",["Describes itself as a scrap business system covering purchases, self bills, sales, payments and weighbridge tickets, and advertises a free 7-day trial.","Says it can prepare structured waste movement records to support digital submissions."]),
+ "skipm8":("https://www.skipm8.com/",["Says it covers bookings, dispatch, waste transfer notes, DEFRA reporting and invoicing in one system for skip hire and waste operators.","Says invoices can go to Xero, QuickBooks, Sage or FreeAgent."]),
+ "skip-tracker":("https://www.skiptracker.co.uk/",["Describes itself as a skip hire management system and shows “DEFRA Digital Waste Tracking Ready!” on its homepage. That is the vendor's claim; we have not verified it.","Advertises £49 + VAT a month for up to 10 users and a free 7-day trial."]),
+}
+CMP=[("wastrio","checkwright","Wastrio","Checkwright","Wastrio (254 impressions in Search Console, 23 Oct to 19 Nov 2026) and Checkwright are both in our general waste management group and both have a hand-checked website."),
+ ("weighsoft","openweigh","Weighsoft","OpenWeigh","Both are in our weighbridges and weighing group, and both have a hand-checked website. Weighsoft had 132 Search Console impressions in the same period."),
+ ("cyrus-tms","wastetrak-360","Cyrus TMS","WasteTrak 360","Both are in our haulage and transport management group. Cyrus TMS was one of the product-name searches in Search Console."),
+ ("metal-track","scrap-tracker","Metal Track","Scrap Tracker","Both are in our scrap metal group and have similar names, so people often mix them up. Both have a hand-checked website."),
+ ("skipm8","skip-tracker","SkipM8","Skip Tracker","Both are in our skip hire group and both have a hand-checked website.")]
+BYSLUG={p["slug"]:p for p in P}
+for a,b,*_ in CMP:
+    assert a in BYSLUG and b in BYSLUG and a in VN and b in VN,(a,b)
+CMPOF={}
+for a,b,*_ in CMP:CMPOF.setdefault(a,[]).append((a,b));CMPOF.setdefault(b,[]).append((a,b))
+def cmp_links(p,pre):
+    l=CMPOF.get(p["slug"],[])
+    return "<p class='small'>Compare side by side: "+", ".join(f"<a href='{pre}compare/{a}-vs-{b}/'>{E(BYSLUG[a]['name'])} vs {E(BYSLUG[b]['name'])}</a>" for a,b in l)+"</p>" if l else ""
 for p in P:
     pre="../../"
     rows_=[("Product (as on GOV.UK)",E(p["name"])),("Provider (as on GOV.UK)",E(p["prov"])),("On GOV.UK's list",f"Yes, list updated {dtxt(LIST_DATE)}: <a href='{LIST}'>see GOV.UK</a>"),("PAT exemption","GOV.UK marks it “exempt for certain PAT scenarios”. Ask the provider which scenarios." if p["pat"] else "None shown on GOV.UK's list"),("Site type (our reading)",f"<a href='{pre}{p['tslug']}/'>{E(p['tlabel'])}</a>"),("Public price",f"{E(p['price'])} (price checked {p['pricedate']}, as shown on the vendor's site, VAT as stated)" if p["price"] else "Not checked yet. Ask the provider."),("Website",f"<a href='{p['url']}' rel='nofollow noopener'>{E(p['url'])}</a> (hand-checked; may be the provider's company site)" if p["url"] else f"Not found yet. Find the provider on <a href='{LIST}'>GOV.UK's list</a>.")]
     tbl="".join(f"<tr><th scope='row'>{a}</th><td>{b}</td></tr>" for a,b in rows_)
     ld={"@context":"https://schema.org","@type":"SoftwareApplication","name":p["name"],"applicationCategory":"BusinessApplication","publisher":{"@type":"Organization","name":p["prov"]},**({"url":p["url"]} if p["url"] else {})}
     page(f"software/{p['slug']}/",product_title(p),product_desc(p),
-     f"<section class='wrap narrow'><p class='small'><a href='{pre}software/'>All software</a> › {E(p['name'])}</p><span class='eyebrow'>Digital waste tracking software · on GOV.UK's list</span><h1>{E(p['name'])}</h1><p class='lede'>by {E(p['prov'])}</p><table class='facts'>{tbl}</table><p class='small'>Being on GOV.UK's list means the provider is listed for the Report receipt of waste service. It is not an endorsement by Defra or by us. Check fit, price and support with the provider before you buy.</p><p><a class='btn ghost' href='{pre}{p['tslug']}/'>More {E(p['tlabel'].lower())} software</a></p></section>",ld=ld)
+     f"<section class='wrap narrow'><p class='small'><a href='{pre}software/'>All software</a> › {E(p['name'])}</p><span class='eyebrow'>Digital waste tracking software · on GOV.UK's list</span><h1>{E(p['name'])}</h1><p class='lede'>by {E(p['prov'])}</p><table class='facts'>{tbl}</table><p class='small'>Being on GOV.UK's list means the provider is listed for the Report receipt of waste service. It is not an endorsement by Defra or by us. Check fit, price and support with the provider before you buy.</p><p><a class='btn ghost' href='{pre}{p['tslug']}/'>More {E(p['tlabel'].lower())} software</a></p>{cmp_links(p,pre)}</section>",ld=ld)
+for a,b,na,nb,why in CMP:
+    pa,pb=BYSLUG[a],BYSLUG[b];pre="../../"
+    def facts(p):
+        return [("Provider (as on GOV.UK)",E(p["prov"])),("On GOV.UK's list",f"Yes, list updated {dtxt(LIST_DATE)}"),("PAT exemption","Marked “exempt for certain PAT scenarios” on GOV.UK" if p["pat"] else "None shown on GOV.UK's list"),("Site type (our reading)",E(p["tlabel"])),("Public price",f"{E(p['price'])} (checked {p['pricedate']}, VAT as stated)" if p["price"] else "No public price found yet. Ask the provider."),("Website",f"<a href='{VN[p['slug']][0]}' rel='nofollow noopener'>{E(VN[p['slug']][0])}</a>" if p["url"] or p["slug"]=="cyrus-tms" else "Not found yet")]
+    fa,fb=facts(pa),facts(pb)
+    tbl="".join(f"<tr><th scope='row'>{x[0]}</th><td>{x[1]}</td><td>{y[1]}</td></tr>" for x,y in zip(fa,fb))
+    def notes(p):
+        u,ns=VN[p["slug"]]
+        return f"<h3><a href='{pre}software/{p['slug']}/'>{E(p['name'])}</a></h3><ul>{''.join(f'<li>{E(n)}</li>' for n in ns)}</ul><p class='small'>Source: <a href='{u}' rel='nofollow noopener'>vendor's own page</a>, read {CMP_READ}. Vendor claims, not our checks.</p>"
+    title=f"{na} vs {nb}: digital waste tracking software";desc=f"{na} vs {nb}: GOV.UK listing, site type, public price and website side by side, from our dataset and each vendor's site."
+    if len(title)>60:title=f"{na} vs {nb}: waste tracking software"
+    if len(desc)>155:desc=f"{na} vs {nb}: GOV.UK listing, site type, price and website side by side."
+    assert len(title)<=60 and len(desc)<=155,(title,desc)
+    others=" ".join(f"<a class='btn ghost' href='{pre}compare/{x[0]}-vs-{x[1]}/'>{E(BYSLUG[x[0]]['name'])} vs {E(BYSLUG[x[1]]['name'])}</a>" for x in [(c[0],c[1]) for c in CMP if (c[0],c[1])!=(a,b)])
+    body=(f"<section class='wrap narrow'><p class='small'><a href='{pre}compare/'>Compare software</a> › {E(na)} vs {E(nb)}</p><span class='eyebrow'>Side by side · neutral</span><h1>{E(na)} vs {E(nb)}</h1>"
+     f"<p class='lede'>Both products are on GOV.UK's list of software providers for the Report receipt of waste service. This page puts our dataset facts next to each other. It does not say which is better.</p>"
+     f"<p class='small'>Why these two: {E(why)} The column order is not a ranking. No payment or sponsorship affects what is shown here.</p>"
+     f"<table class='facts' style='overflow-wrap:anywhere;word-break:break-word;table-layout:fixed;width:100%'><thead><tr><th scope='col'>Fact</th><th scope='col'>{E(na)}</th><th scope='col'>{E(nb)}</th></tr></thead><tbody>{tbl}</tbody></table>"
+     f"<h2>What each vendor's own site says</h2>{notes(pa)}{notes(pb)}"
+     f"<h2>Questions to ask both providers</h2><ul><li>Does it submit to the Report receipt of waste service for your site type, and is that included in the price?</li><li>What does it cost for your number of sites, users or vehicles, and is VAT extra?</li><li>Can you try it first, and what support do you get?</li></ul>"
+     f"<p>GOV.UK's guidance: <a href='{RRW}'>Report receipt of waste</a>, and <a href='{CHECK}'>check if you need to report the waste you receive</a>. The provider list is <a href='{LIST}'>here</a>.</p>"
+     f"<p class='small'><strong>Not an endorsement.</strong> Being on GOV.UK's list is not an endorsement by Defra or by us. Prices and features change: check everything with the vendor before you buy. Not legal advice.</p>"
+     f"<p>{others}</p></section>")
+    page(f"compare/{a}-vs-{b}/",title,desc,body)
+page("compare/","Compare digital waste tracking software, side by side","Neutral side-by-side comparisons of products on GOV.UK's Report receipt of waste list: dataset facts and vendor links, no rankings.",
+ hero("Side by side · neutral","Compare <em>software</em>","Five pairs of similar products from GOV.UK's Report receipt of waste list. Facts only, with vendor sources. Not rankings, and not endorsements.")+
+ "<section class='wrap narrow'><ul>"+"".join(f"<li><a href='../compare/{a}-vs-{b}/'>{E(na)} vs {E(nb)}</a> <span class='small'>({E(BYSLUG[a]['tlabel'])})</span></li>" for a,b,na,nb,_ in CMP)+f"</ul><p class='small'>Want another pair? <a href='../contact/'>Tell us</a>. See <a href='../about-methodology/'>how we build the list</a>. Not an endorsement of any product; check with the vendor.</p></section>")
 def guide(path,title,desc,eyebrow,h1,body,label=""):
     page(path,title,desc,f"<section class='wrap narrow'><span class='eyebrow'>{eyebrow}</span>{label}<h1>{h1}</h1><p class='small'>Last checked against GOV.UK {dtxt(datetime.date.fromisoformat(UPDATED))}. Not legal advice; check your duties with your regulator.</p>{body}<p><a class='btn' href='{'../'*path.count('/')}'>Find software</a></p></section>",kind="Article")
 guide("what-is-digital-waste-tracking/","What is digital waste tracking? Dates and who it applies to | Waste Tracking Finder","Plain-English guide to UK digital waste tracking: who must report the waste they receive, when, and how, quoted from GOV.UK.","Guide","What is <em>digital waste tracking</em>?",
